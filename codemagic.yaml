@@ -9,6 +9,19 @@ workflows:
     scripts:
       - name: Generate Android platform files
         script: flutter create --platforms=android --project-name simple_calendar .
+      - name: Set Android app display name
+        script: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          manifest = Path('android/app/src/main/AndroidManifest.xml')
+          content = manifest.read_text()
+          updated, count = re.subn(r'android:label="[^"]*"', 'android:label="تقویم"', content, count=1)
+          if count != 1:
+              raise SystemExit('Could not find android:label in AndroidManifest.xml')
+          manifest.write_text(updated)
+          print('Android app display name set to تقویم')
+          PY
       - name: Configure Android SDK path
         script: echo "flutter.sdk=$HOME/programs/flutter" > "$CM_BUILD_DIR/android/local.properties"
       - name: Get Flutter packages
