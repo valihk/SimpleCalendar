@@ -236,7 +236,16 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
               const SizedBox(height: 8),
               Expanded(
-                child: GridView.builder(
+                child: GestureDetector(
+                  onHorizontalDragEnd: (details) {
+                    final velocity = details.primaryVelocity ?? 0;
+                    if (velocity.abs() < 200) return;
+                    setState(() {
+                      month = Jalali(month.year, month.month, 1)
+                          .addMonths(velocity < 0 ? 1 : -1);
+                    });
+                  },
+                  child: GridView.builder(
                   itemCount: count,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 7,
@@ -251,6 +260,7 @@ class _CalendarPageState extends State<CalendarPage> {
                     }
 
                     final d = Jalali(month.year, month.month, n);
+                    final gregorian = d.toGregorian();
                     final active = selected != null && key(d) == key(selected!);
                     final isToday = key(d) == key(today);
                     final isFriday = d.weekDay == 7;
@@ -286,14 +296,29 @@ class _CalendarPageState extends State<CalendarPage> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            Text(
-                              '$n',
-                              style: TextStyle(
-                                color: foreground,
-                                fontWeight: (official || isFriday || isToday || dayEvents.isNotEmpty)
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
-                              ),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '$n',
+                                  style: TextStyle(
+                                    color: foreground,
+                                    fontWeight: (official || isFriday || isToday || dayEvents.isNotEmpty)
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  '${gregorian.day}/${gregorian.month}',
+                                  maxLines: 1,
+                                  style: TextStyle(
+                                    color: active ? Colors.white70 : Colors.grey.shade700,
+                                    fontSize: 8,
+                                  ),
+                                ),
+                              ],
                             ),
                             if (dayEvents.isNotEmpty)
                               Positioned(
@@ -316,6 +341,7 @@ class _CalendarPageState extends State<CalendarPage> {
                       ),
                     );
                   },
+                  ),
                 ),
               ),
               Wrap(
@@ -347,8 +373,8 @@ class _CalendarPageState extends State<CalendarPage> {
                           children: [
                             Expanded(
                               child: Text(
-                                '${selected!.day} ${names[selected!.month - 1]} ${selected!.year}',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                                '${selected!.day} ${names[selected!.month - 1]} ${selected!.year}\nمیلادی: ${selected!.toGregorian().year}/${selected!.toGregorian().month.toString().padLeft(2, '0')}/${selected!.toGregorian().day.toString().padLeft(2, '0')}',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                               ),
                             ),
                             IconButton(
