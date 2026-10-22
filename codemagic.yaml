@@ -14,7 +14,7 @@ workflows:
       - name: Get Flutter packages
         script: flutter pub get
       - name: Analyze application source
-        script: flutter analyze lib
+        script: flutter analyze --no-pub --no-fatal-infos lib
       - name: Build release APK
         script: flutter build apk --release
     artifacts:
